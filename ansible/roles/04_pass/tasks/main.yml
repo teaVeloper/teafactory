@@ -1,0 +1,60 @@
+---
+# Install necessary pacman packages
+- name: Install pacman packages
+  become: True
+  community.general.pacman:
+    name: "{{ pass_pacman_packages }}"
+    state: present
+
+- name: Ensure gnupg and dirmngr are installed
+  become: True
+  community.general.pacman:
+    name:
+      - gnupg
+    state: present
+
+- name: Ensure GPG directory exists
+  file:
+    path: "{{ xdg_data_home }}/gnupg"
+    state: directory
+    mode: '0700'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+
+
+# Install pass plugins from AUR
+- name: Install pass plugins from AUR
+  kewlfft.aur.aur:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ pass_aur_packages }}"
+  loop_control:
+    label: "{{ item }}"
+
+# Ensure pipx is installed
+- name: Ensure pipx is installed
+  become: True
+  community.general.pacman:
+    name: python-pipx
+    state: present
+
+- name: Install keyring with pipx
+  community.general.pipx:
+    name: keyring
+    state: present
+
+- name: inject keyring_pass to keyring
+  community.general.pipx:
+    name: keyring
+    inject_packages:
+      - keyring_pass
+    state: inject
+
+# Ensure password store directory exists
+- name: Ensure password store directory exists
+  ansible.builtin.file:
+    path: "{{ password_store_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    mode: '0700'
+

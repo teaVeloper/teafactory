@@ -1,0 +1,14 @@
+---
+# TODO: solaar
+- name: Install Logitech Options for mouse support
+  kewlfft.aur.aur:
+    name: logiops
+    state: present
+
+- name: Enable and start Logitech Options service
+  become: True
+  systemd:
+    name: logid
+    enabled: true
+    state: started
+

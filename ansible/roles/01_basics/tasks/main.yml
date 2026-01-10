@@ -1,0 +1,77 @@
+---
+- name: Start systemd service - systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: started
+    enabled: yes
+  become: true
+
+- name: Install packages
+  community.general.pacman:
+    name:
+      # mirror list for arch
+      - reflector
+      # add additional scripts for packman
+      - pacman-contrib
+      # packages for xdg base dirs
+      - xdg-desktop-portal
+      - xdg-user-dirs
+    state: present
+  become: true
+
+- name: Start systemd service - paccache.timer
+  ansible.builtin.systemd:
+    name: paccache.timer
+    state: started
+    enabled: yes
+  become: true
+
+- name: Start systemd service - xdg-user-dirs-update.service
+  ansible.builtin.systemd:
+    name: xdg-user-dirs-update.service
+    state: started
+    enabled: yes
+    scope: user
+
+- name: Update reflector configuration file
+  ansible.builtin.template:
+    src: reflector.conf.j2
+    dest: /etc/xdg/reflector/reflector.conf
+    backup: no
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Update mirrorlist
+  ansible.builtin.template:
+    src: mirrorlist
+    dest: /etc/pacman.d/mirrorlist
+    backup: no
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Update pacman configuration file
+  ansible.builtin.template:
+    src: pacman.conf.j2
+    dest: /etc/pacman.conf
+    backup: no
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+
+- name: Start systemd service - systemd-boot-update.service
+  ansible.builtin.systemd:
+    name: systemd-boot-update.service
+    state: started
+    enabled: yes
+  become: true
+
+- name: Upgrade system
+  community.general.pacman:
+    update_cache: yes
+    upgrade: yes
+  become: true

@@ -1,0 +1,304 @@
+---
+# set aur helper
+# supported helpers are here https://github.com/kewlfft/ansible-aur#kewlfftauraur-module
+aur_helper: yay
+
+base_fonts:
+  - adobe-source-code-pro-fonts    # Clean, monospaced font
+  - adobe-source-sans-pro-fonts    # Sans-serif font family
+  - adobe-source-serif-pro-fonts   # Serif font family
+  - gnu-free-fonts                 # Free UCS Outline Fonts
+  - noto-fonts                     # Google's font family for all languages
+  - noto-fonts-cjk                 # Chinese, Japanese, Korean fonts
+  - noto-fonts-emoji               # Emoji fonts
+  - powerline-fonts                # Fonts for Powerline prompt
+  - ttf-anonymous-pro              # Monospaced font designed for coding
+  - ttf-dejavu                     # DejaVu font family
+  - otf-cascadia-code              # Monospaced font by Microsoft
+  - ttf-cascadia-code              # TrueType version of Cascadia Code
+  - ttf-hack                       # Hack font family
+  - ttf-nerd-fonts-symbols         # Nerd Fonts Symbols
+
+package_categories:
+  base:
+    pacman:
+      # **System Utilities**
+      - xclip                      # clipboard via CLI
+      - vim                        # Text editor
+      - unzip                      # Unzip utility
+      - zip                        # Zip utility
+      - tree                       # Directory listing in tree format
+      - wget                       # Network downloader
+      - curl                       # Data transfer utility
+      - rsync                      # File synchronization
+      - htop                       # Process viewer
+      - neofetch                   # System information tool
+      - openssh                    # SSH client and server
+      - netcat                     # Networking utility
+      - jq                         # JSON processor
+      - ripgrep                    # Fast search tool
+      - fd                         # Simple alternative to 'find'
+      - bat                        # 'cat' clone with syntax highlighting
+      - fzf                        # Fuzzy finder
+      - eza                        # Modern replacement for 'ls'
+      - man                        # Manual pages
+      - man-db                     # Man page database
+      - man-pages                  # Man pages collection
+      - xdg-desktop-portal-gtk     # Desktop integration portal
+
+      # **Version Control**
+      - git                        # Version control system
+      - git-filter-repo            # Tool for rewriting git history
+      - git-delta                  # Enhanced 'git diff' viewer
+
+      # **Shell and Terminal**
+      - zsh                        # Z shell
+      - zsh-completions            # Additional completions for Zsh
+      - bash                       # Bourne Again Shell
+      - bash-completion            # Bash completions
+      - kitty                      # GPU-based terminal emulator
+      - wezterm                    # GPU-accelerated terminal emulator
+
+      # **Password Management**
+      - pass                       # Standard Unix password manager
+      - gopass                     # Go implementation of pass with additional features
+
+      # **Programming Languages and Tools**
+      - python-pip                 # Python package installer
+      - python-pipx                # Install Python applications in isolated environments
+      - python-uv                  # python package manager
+      - ryea                       # python project manager
+      - rustup                     # Rust toolchain installer
+      - gnupg                      # OpenPGP implementation
+
+      # **System Tools**
+      - usbutils                   # USB device utilities
+      - xfsprogs                   # XFS filesystem utilities
+      - exfatprogs                 # exFAT filesystem utilities
+      - ntfs-3g                    # NTFS filesystem driver
+      - dosfstools                 # DOS filesystem utilities
+      - e2fsprogs                  # Ext2/3/4 filesystem utilities
+      - btrfs-progs                # Btrfs filesystem utilities
+      - gparted                    # Partition editor
+      - lvm2                       # Logical Volume Manager utilities
+      - networkmanager             # Network connection manager
+      - openresolv                 # Resolver framework for DNS
+      - linux-firmware             # Firmware files for Linux
+      - grub-btrfs                 # Include Btrfs snapshots in GRUB
+      - pipewire                   # Multimedia framework
+      - pipewire-alsa              # ALSA configuration for PipeWire
+      - wireplumber                # PipeWire session manager
+      - ufw                        # Uncomplicated Firewall
+      - fail2ban                   # Ban IPs with too many failed login attempts
+      - apparmor                   # Mandatory access control framework
+      - timeshift                  # System restore tool
+      - firejail                   # SUID program to sandbox applications
+      - solaar                     # Logitech device manager for Linux
+      - sudo                       # Superuser do
+      - pkgstats                   # Sends package statistics to Arch Linux
+      - rsync                      # File synchronization tool
+      - etckeeper                  # Version control for /etc
+      - neovim                     # Vim-fork focused on extensibility and usability
+
+      # **Multimedia**
+      - alsa-firmware              # Firmware for ALSA devices
+      - alsa-plugins               # ALSA plugins
+      - alsa-utils                 # ALSA utilities
+      - obs-studio                 # Streaming and recording software
+      - vlc                        # Multimedia player
+      - flameshot                  # Screenshot utility
+      - inkscape                   # Vector graphics editor
+      - evince                     # Document viewer
+
+      # **Security and Encryption**
+      - gnupg                      # OpenPGP implementation
+      - pass                       # Password manager
+      - age                        # Simple file encryption tool
+      - sequoia                    # OpenPGP implementation in Rust
+      - openvpn                    # VPN client
+      - tarsnap                    # Secure online backups
+
+      # **Networking Tools**
+      - inetutils                  # Network utilities
+      - iputils                    # IP networking utilities
+      - iperf3                     # Network bandwidth measurement
+      - iotop                      # Monitor disk I/O
+      - wpa_supplicant             # Wireless LAN supplicant
+      - netcat                     # Networking utility
+
+      # **GUI Applications**
+      - firefox                    # Web browser
+      - thunderbird                # Email client
+      - chromium                   # Web browser
+      - qbittorrent                # Bittorrent client
+
+      # **Other Utilities**
+      - pandoc                     # Document converter
+      - rofi                       # Application launcher
+      - tree                       # Directory listing in tree format
+      - unzip                      # Unzip utility
+      - zip                        # Zip utility
+      - zstd                       # Compression tool
+      - neofetch                   # System information tool
+
+    aur:
+      - zsh-antidote               # Zsh plugin manager
+      # - asdf-vm                    # Version manager
+      - tomb                       # File encryption tool
+      - anki                       # Flashcard program
+      - mise                       # Multi-pane file manager
+
+    flatpak:
+      - com.spotify.Client         # Music streaming
+      - com.discordapp.Discord     # Chat app
+      - com.github.tchx84.Flatseal # Flatpak permissions manager
+      - fr.handbrake.ghb           # Video transcoder
+      # - org.gimp.GIMP              # Image editor
+      - org.libreoffice.LibreOffice # Office suite
+      - org.freedesktop.Platform.ffmpeg-full/x86_64/23.08 # Multimedia framework extension
+      - org.freedesktop.Platform.openh264/x86_64/2.3.0    # H.264 codec support
+      - org.kde.kolourpaint            # Paint program
+
+  networking:
+    pacman:
+      - wireguard-tools            # WireGuard VPN tools
+
+  development:
+    pacman:
+      # **IDEs and Editors**
+      - intellij-idea-community-edition # Java IDE
+      - code                           # Visual Studio Code - just for having it, never really use
+      - neovim                         # Advanced text editor
+
+      # **Containers and Orchestration**
+      - docker                         # Container platform
+      - docker-compose                 # Define and run multi-container applications
+      - kubectl                        # Kubernetes command-line tool
+      - terraform                      # Infrastructure as code tool
+
+      # **Build Tools**
+      - gcc                            # GNU Compiler Collection
+      - gdb                            # GNU Debugger
+      - valgrind                       # Memory debugging
+      - cmake                          # Build system
+      - make                           # Build automation tool
+      - ninja                          # Build system
+      - llvm                           # Compiler infrastructure
+      - binaryen                       # WebAssembly toolkit
+
+      # **Programming Languages and Tools**
+      - rustup                         # Rust toolchain installer
+      - go                             # Go programming language
+      - python-pip                     # Python package installer
+      - python-pipx                    # Install Python applications in isolated environments
+      - lua                            # Lua programming language
+      - ruby                           # Ruby programming language
+
+    aur:
+      - svgo                           # SVG optimizer
+
+    pipx:
+      - httpie                         # HTTP client
+      - yamllint                       # YAML linter
+      - ansible                        # Automation tool
+      - ansible-lint                   # Linter for Ansible playbooks
+      - keyring                        # System keyring access
+
+  computational-science:
+    pacman:
+      - sagemath                       # Math software
+      - octave                         # Numerical computations
+      - r                              # Statistical computing
+      - texlive-core                   # TeX Live core distribution
+      - texlive-latexextra             # Extra LaTeX packages
+      - texlive-pictures               # Extra LaTeX for drawing graphics
+      - jupyter-notebook               # Interactive computing
+      - gephi                          # network visualization
+      - graphviz                       # graph visualization software
+
+    aur:
+      - miniconda3                     # Python distribution
+      - zotero-bin                     # Reference manager
+
+  electronic-engineering:
+    pacman:
+      # **Compilers and Toolchains**
+      - avr-gcc                        # AVR GCC toolchain
+      - arm-none-eabi-gcc              # ARM GCC toolchain
+      - verilator                      # Verilog simulator
+
+      # **Microcontroller Tools**
+      - esptool                        # ESP8266 and ESP32 tool
+      - openocd                        # On-chip debugging
+      - gnuradio                       # Software-defined radio
+
+      # **Electronics Design**
+      - kicad                          # PCB design software
+      - arduino                        # Arduino IDE
+
+    pipx:
+      - platformio                     # IoT development platform
+
+  security-research:
+    pacman:
+      - ghidra                         # Reverse engineering
+      - radare2                        # Reverse engineering tools
+      - wireshark-qt                   # Network protocol analyzer
+      - metasploit                     # Penetration testing
+      - nmap                           # Network scanner
+      - tcpdump                        # Packet analyzer
+      - aircrack-ng                    # Wireless security tools
+      - john                           # Password cracker
+      - hydra                          # Network logon cracker
+      # **Networking and Security Tools**
+      - wireshark-qt                   # Network protocol analyzer
+      - tcpdump                        # Packet analyzer
+      - nmap                           # Network scanner
+      - metasploit                     # Penetration testing framework
+      - ettercap-gtk                   # Network sniffer/interceptor/logger
+      - aircrack-ng                    # Wireless security tools
+
+    aur:
+      - ida-free                       # Disassembler
+      - gns3-gui                       # Network simulator GUI
+      - gns3-server                    # Network simulator server
+      - android-studio                 # Android development
+      - rpi-imager-bin                 # Raspberry Pi imaging utility
+
+  desktop:
+    pacman:
+      - blender                        # 3D creation suite
+
+    aur:
+      - svgo                           # SVG optimizer
+
+    flatpak:
+      - com.slack.Slack                # Messaging app
+      - com.valvesoftware.Steam        # Gaming platform
+      - org.bunkus.mkvtoolnix-gui      # Matroska tools
+      - org.kde.okular                 # Document viewer
+
+  laptop:
+    # **Power Management and Laptop Tools**
+    pacman:
+      - tlp                            # Advanced power management
+      - tlp-rdw                        # Radio device wizard
+      - powertop                       # Power consumption monitor
+      - acpi                           # ACPI client
+
+    aur:
+      # Add laptop-specific AUR packages if needed
+
+    flatpak:
+      # Add laptop-specific Flatpak packages if needed
+  cloud-dev:
+     pacman:
+       - terraform
+     aur:
+       - aws-cli-v2-bin
+       - google-cloud-sdk
+       - azure-cli
+     pipx:
+       - databricks-cli
+ 
+

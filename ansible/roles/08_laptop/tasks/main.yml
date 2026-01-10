@@ -1,0 +1,14 @@
+---
+- name: Install power management packages
+  community.general.pacman:
+    name:
+      - power-profiles-daemon
+    state: present
+  become: true
+
+- name: Start systemd service - power-profiles-daemon.service
+  ansible.builtin.systemd:
+    name: power-profiles-daemon.service
+    state: started
+    enabled: yes
+  become: true

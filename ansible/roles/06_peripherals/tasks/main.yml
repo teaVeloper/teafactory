@@ -1,0 +1,9 @@
+---
+- name: Install yubikey
+  ansible.builtin.import_tasks: yubikey.yml
+
+- name: Install keyboards
+  ansible.builtin.import_tasks: keyboard.yml
+
+- name: Install mouse
+  ansible.builtin.import_tasks: mouse.yml

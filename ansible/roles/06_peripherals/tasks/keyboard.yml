@@ -1,0 +1,63 @@
+---
+- name: Ensure pacman packages are installed
+  become: True
+  community.general.pacman:
+    name:
+      - libusb
+      - webkit2gtk
+      - gtk3
+    state: present
+
+- name: Copy udev rules for ZSA keyboards
+  become: True
+  ansible.builtin.copy:
+    src: 50-zsa.rules
+    dest: /etc/udev/rules.d/50-zsa.rules
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload udev rules
+  become: True
+  ansible.builtin.command: udevadm control --reload-rules
+  become: yes
+
+- name: Ensure plugdev group exists
+  become: True
+  ansible.builtin.group:
+    name: plugdev
+    state: present
+
+- name: Add user to plugdev group
+  become: True
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: plugdev
+    append: yes
+
+- name: Install zsa tools from AUR
+  kewlfft.aur.aur:
+    name: 
+      - zsa-wally-cli-git
+      - zsa-kontroll-bin
+      - zsa-keymapp-bin
+    state: present
+
+
+
+- name: Install Plover for stenography
+  kewlfft.aur.aur:
+    name: plover
+    state: present
+
+
+# this is stuff for QMK
+# - name: Install necessary packages for Oryx
+#   pacman:
+#     name:
+#       - avr-gcc
+#       - avr-libc
+#       - dfu-util
+#       - dfu-programmer
+#       - dfu-tool
+#     state: present

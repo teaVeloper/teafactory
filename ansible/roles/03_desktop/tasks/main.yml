@@ -1,0 +1,6 @@
+---
+- name: Install Graphics
+  include_tasks: x.yml
+
+- name: Install KDE
+  include_tasks: kde.yml

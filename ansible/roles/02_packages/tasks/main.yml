@@ -1,0 +1,85 @@
+---
+- name: Initialize collected_packages
+  set_fact:
+    collected_packages:
+      pacman: []
+      aur: []
+      flatpak: []
+      pipx: []
+
+- name: Aggregate packages from selected categories
+  set_fact:
+    collected_packages:
+      pacman: "{{ collected_packages.pacman + (package_categories[item].pacman | default([])) }}"
+      aur: "{{ collected_packages.aur + (package_categories[item].aur | default([])) }}"
+      flatpak: "{{ collected_packages.flatpak + (package_categories[item].flatpak | default([])) }}"
+      pipx: "{{ collected_packages.pipx + (package_categories[item].pipx | default([])) }}"
+  loop: "{{ package_cats }}"
+  loop_control:
+    loop_var: item
+
+- name: Remove duplicate packages
+  set_fact:
+    collected_packages:
+      pacman: "{{ collected_packages.pacman | unique }}"
+      aur: "{{ collected_packages.aur | unique }}"
+      flatpak: "{{ collected_packages.flatpak | unique }}"
+      pipx: "{{ collected_packages.pipx | unique }}"
+
+- name: Install font packages
+  become: true
+  community.general.pacman:
+    name: "{{ base_fonts }}"
+    state: present
+
+- name: Install pacman packages
+  become: true
+  community.general.pacman:
+    name: "{{ collected_packages.pacman }}"
+    state: present
+  when: collected_packages.pacman | length > 0
+
+- name: Install AUR packages
+  become: true
+  kewlfft.aur.aur:
+    name: "{{ collected_packages.aur }}"
+    state: present
+    use: "{{ aur_helper }}"
+  when: collected_packages.aur | length > 0
+
+- name: Add Flathub repository
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
+  become: true
+
+- name: Install flatpaks
+  become: true
+  community.general.flatpak:
+    name: "{{ collected_packages.flatpak }}"
+    state: present
+    method: system
+    remote: flathub
+  when: collected_packages.flatpak | length > 0
+
+- name: Ensure pipx is installed
+  become: true
+  community.general.pacman:
+    name: python-pipx
+    state: present
+
+- name: Install pipx packages
+  become: true
+  community.general.pipx:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ collected_packages.pipx }}"
+  when: collected_packages.pipx | length > 0
+
+- name: Start systemd service - systemd-modules-load.service
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-modules-load.service
+    state: started
+    enabled: yes

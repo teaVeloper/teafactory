@@ -1,0 +1,38 @@
+---
+- name: Install YubiKey support tools
+  become: True
+  community.general.pacman:
+    name:
+      - libfido2
+      - yubikey-manager
+      - yubico-piv-tool
+      - yubico-pam
+      - pam-u2f
+      - yubioath-desktop
+      - yubikey-personalization
+      - gnupg
+      - ccid
+      - pcsclite
+    state: present
+- name: Install AUR packages
+  become: true
+  kewlfft.aur.aur:
+    name: yubikey-agent
+    state: present
+    use: "{{ aur_helper }}"
+
+- name: Configure YubiKey
+  become: True
+  block:
+    - name: Enable ccid service for YubiKey
+      ansible.builtin.systemd:
+        name: pcscd
+        enabled: yes
+        state: started
+
+    # - name: Set up GPG for YubiKey
+    #   ansible.builtin.shell: |
+    #     gpg --card-status
+    #
+    # - name: YubiKey Manager setup
+    #   ansible.builtin.command: ykman info

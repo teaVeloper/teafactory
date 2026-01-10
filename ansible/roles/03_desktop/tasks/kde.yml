@@ -1,0 +1,43 @@
+---
+- name: Install KDE Plasma
+  block:
+    - name: Install Plasma
+      community.general.pacman:
+        name:
+          # KDE apps/bundles
+          - plasma-meta
+          - plasma-workspace
+          - kde-sdk-meta
+          - kde-system-meta
+          - kde-utilities-meta
+          - sddm
+          - xdg-desktop-portal-kde
+          # Individual apps
+          - colord-kde
+          - ffmpegthumbs
+          - gwenview
+          - kamoso
+          - kcolorchooser
+          - kdeconnect
+          - kdegraphics-mobipocket
+          - kdegraphics-thumbnailers
+          - kdenetwork-filesharing
+          - kfilemetadata
+          - kio-extras
+          - kio-fuse
+          - kio-zeroconf
+          - kleopatra
+          - kmix
+          - kparts
+          - spectacle
+          - svgpart
+        state: present
+      become: true
+
+
+- name: Enable SDDM service for KDE
+  systemd:
+    name: sddm
+    enabled: true
+    state: started
+

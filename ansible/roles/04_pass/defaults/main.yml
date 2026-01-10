@@ -1,0 +1,20 @@
+pass_pacman_packages:
+  - pass
+  - gopass
+  - pass-otp
+  - bitwarden-cli
+  - gnupg
+  - xclip  # or wl-clipboard for Wayland if you're using Wayland instead
+  - wl-clipboard
+
+pass_aur_packages:
+  - tomb
+  - pass-tomb
+  - pass-update
+  - pass-import
+  - pass-audit
+  - tessen
+  - pass-tessen
+
+password_store_dir: "{{ xdg_data_home }}/pass"
+
