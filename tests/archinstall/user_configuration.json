@@ -1,0 +1,156 @@
+{
+    "app_config": {},
+    "archinstall-language": "English",
+    "auth_config": {},
+    "bootloader_config": {
+        "bootloader": "Systemd-boot",
+        "removable": false,
+        "uki": false
+    },
+    "custom_commands": [],
+    "disk_config": {
+        "btrfs_options": {
+            "snapshot_config": null
+        },
+        "config_type": "manual_partitioning",
+        "device_modifications": [
+            {
+                "device": "/dev/vda",
+                "partitions": [
+                    {
+                        "btrfs": [],
+                        "dev_path": null,
+                        "flags": [
+                            "esp",
+                            "boot"
+                        ],
+                        "fs_type": "fat32",
+                        "mount_options": [],
+                        "mountpoint": "/boot",
+                        "obj_id": "f22bbb0f-3bd8-485a-9f2a-689779d1f26c",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "MB",
+                            "value": 1024
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "MiB",
+                            "value": 1
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    },
+                    {
+                        "btrfs": [
+                            {
+                                "mountpoint": "/",
+                                "name": "@"
+                            },
+                            {
+                                "mountpoint": "/home",
+                                "name": "@home"
+                            },
+                            {
+                                "mountpoint": "/srv",
+                                "name": "@srv"
+                            },
+                            {
+                                "mountpoint": "/var/cache",
+                                "name": "@cache"
+                            },
+                            {
+                                "mountpoint": "/var/log",
+                                "name": "@log"
+                            }
+                        ],
+                        "dev_path": null,
+                        "flags": [],
+                        "fs_type": "btrfs",
+                        "mount_options": [],
+                        "mountpoint": null,
+                        "obj_id": "bb554d43-bc18-4a3c-97c0-c214928ba567",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 20448739328
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 1025048576
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    }
+                ],
+                "wipe": false
+            }
+        ]
+    },
+    "hostname": "archlinux",
+    "kernels": [
+        "linux"
+    ],
+    "locale_config": {
+        "kb_layout": "us",
+        "sys_enc": "UTF-8",
+        "sys_lang": "en_US.UTF-8"
+    },
+    "mirror_config": {
+        "custom_repositories": [],
+        "custom_servers": [],
+        "mirror_regions": {
+            "Austria": [
+                "http://mirror.easyname.at/archlinux/$repo/os/$arch",
+                "http://mirror.digitalnova.at/archlinux/$repo/os/$arch",
+                "http://at.mirrors.cicku.me/archlinux/$repo/os/$arch",
+                "https://at.mirrors.cicku.me/archlinux/$repo/os/$arch",
+                "https://at.arch.mirror.kescher.at/$repo/os/$arch",
+                "http://mirror.alwyzon.net/archlinux/$repo/os/$arch",
+                "https://mirror.alwyzon.net/archlinux/$repo/os/$arch",
+                "https://at.arch.niranjan.co/$repo/os/$arch",
+                "https://at-vie.soulharsh007.dev/archlinux/$repo/os/$arch"
+            ]
+        },
+        "optional_repositories": []
+    },
+    "network_config": {
+        "type": "nm"
+    },
+    "ntp": true,
+    "packages": [
+        "ansible",
+        "base",
+        "base-devel",
+        "btrfs-progs",
+        "git",
+        "linux-firmware",
+        "openssh",
+        "sshpass",
+        "sudo",
+        "vim",
+        "curl"
+    ],
+    "parallel_downloads": 0,
+    "script": null,
+    "services": [],
+    "swap": {
+        "algorithm": "zstd",
+        "enabled": false
+    },
+    "timezone": "Europe/Vienna",
+    "version": "3.0.15"
+}
