@@ -1,0 +1,17 @@
+---
+- name: Dotfiles | Read target file from remote
+  ansible.builtin.slurp:
+    src: "{{ df_target_file }}"
+  register: dotfiles_target_slurp
+
+- name: Dotfiles | Parse target YAML # noqa var-naming
+  ansible.builtin.set_fact:
+    df_file: "{{ (dotfiles_target_slurp.content | b64decode) | from_yaml }}"
+
+- name: Dotfiles | Apply links from target file # noqa var-naming
+  ansible.builtin.include_tasks: apply_link.yml
+  loop: "{{ df_file.links | default([]) }}"
+  loop_control:
+    loop_var: df_link
+  vars:
+    df_defaults: "{{ df_file.defaults | default({}) }}"

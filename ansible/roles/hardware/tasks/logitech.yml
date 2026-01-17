@@ -1,0 +1,15 @@
+---
+- name: Hardware | logitech | Install pacman deps
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ hardware_pacman_packages_logitech }}"
+    packages_aur_packages: "{{ hardware_aur_packages_logitech }}"
+
+- name: Hardware | logitech | Enable logiops daemon
+  become: true
+  ansible.builtin.systemd:
+    name: logid.service
+    enabled: true
+    state: started

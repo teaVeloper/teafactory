@@ -1,0 +1,14 @@
+---
+- name: Hardware | laptop | Install power management packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ hardware_pacman_packages_laptop }}"
+
+- name: Hardware | laptop | Enable power-profiles-daemon
+  become: true
+  ansible.builtin.systemd:
+    name: power-profiles-daemon.service
+    enabled: true
+    state: started

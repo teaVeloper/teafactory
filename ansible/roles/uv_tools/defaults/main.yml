@@ -1,0 +1,14 @@
+---
+uv_tools_enable: true
+
+# Tools you always want (stable daily-use)
+uv_tools_required:
+  - buku
+  - pypi-command-line
+
+# Tools you’re experimenting with (opt-in)
+uv_tools_extras: []
+# example:
+# uv_tools_extras:
+#   - cobib
+#   - papis

@@ -1,0 +1,143 @@
+---
+- name: Dotfiles | Merge defaults into link
+  ansible.builtin.set_fact:
+    dotfiles_df_repo_key: "{{ df_link.repo | default(df_defaults.repo | default('teashellf')) }}"
+    dotfiles_df_required: "{{ (df_link.required | default(df_defaults.required | default(true))) | bool }}"
+    dotfiles_df_path: "{{ df_link.path | default(df_defaults.path | default('')) }}"
+    dotfiles_df_src: "{{ df_link.src }}"
+    dotfiles_df_dest: "{{ df_link.dest }}"
+
+- name: Dotfiles | Resolve repo info
+  ansible.builtin.set_fact:
+    dotfiles_df_repo_info: "{{ tg.repos[dotfiles_df_repo_key] | default({}) }}"
+    dotfiles_df_repo_path: "{{ (tg.repos[dotfiles_df_repo_key].path if (tg.repos[dotfiles_df_repo_key] is defined) else '') }}"
+
+- name: Dotfiles | Fail if required repo missing from manifest
+  ansible.builtin.fail:
+    msg: "Required repo '{{ dotfiles_df_repo_key }}' not found in manifest (src={{ dotfiles_df_src }}, dest={{ dotfiles_df_dest }})"
+  when:
+    - dotfiles_df_required
+    - dotfiles_df_repo_info | length == 0
+
+- name: Dotfiles | Resolve source path
+  ansible.builtin.set_fact:
+    dotfiles_df_src_abs: "{{ dotfiles_teagarden_home }}/{{ dotfiles_df_repo_path }}/{{ dotfiles_df_path }}/{{ dotfiles_df_src }}"
+  when: dotfiles_df_repo_info | length > 0
+
+- name: Dotfiles | Start destination expansion
+  ansible.builtin.set_fact:
+    dotfiles_df_dest_expanded: "{{ dotfiles_df_dest }}"
+  when: dotfiles_df_repo_info | length > 0
+
+- name: Dotfiles | Expand destination variables
+  ansible.builtin.set_fact:
+    dotfiles_df_dest_expanded: "{{ dotfiles_df_dest_expanded | replace(item.key, item.value) }}"
+  loop:
+    - { key: "$HOME", value: "{{ dotfiles_home }}" }
+    - { key: "$XDG_CONFIG_HOME", value: "{{ dotfiles_xdg_config_home }}" }
+    - { key: "$XDG_DATA_HOME", value: "{{ dotfiles_xdg_data_home }}" }
+    - { key: "$XDG_CACHE_HOME", value: "{{ dotfiles_xdg_cache_home }}" }
+    - { key: "$XDG_STATE_HOME", value: "{{ dotfiles_xdg_state_home }}" }
+    - { key: "$TEAGARDEN_HOME", value: "{{ dotfiles_teagarden_home }}" }
+  when: dotfiles_df_repo_info | length > 0
+
+- name: Dotfiles | Fail if destination still contains unexpanded variables
+  ansible.builtin.fail:
+    msg: "Destination still contains unexpanded vars: dest='{{ dotfiles_df_dest }}' expanded='{{ dotfiles_df_dest_expanded }}'"
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_dest_expanded is search('\\$[A-Z_]+')
+
+- name: Dotfiles | Resolve destination parent
+  ansible.builtin.set_fact:
+    dotfiles_df_dest_parent: "{{ dotfiles_df_dest_expanded | dirname }}"
+  when: dotfiles_df_repo_info | length > 0
+
+- name: Dotfiles | Stat source
+  ansible.builtin.stat:
+    path: "{{ dotfiles_df_src_abs }}"
+  register: dotfiles_df_src_stat
+  when: dotfiles_df_repo_info | length > 0
+
+- name: Dotfiles | Fail if required source missing
+  ansible.builtin.fail:
+    msg: "Required source missing: {{ dotfiles_df_src_abs }} -> {{ dotfiles_df_dest_expanded }}"
+  when:
+    - dotfiles_df_required
+    - dotfiles_df_repo_info | length > 0
+    - not dotfiles_df_src_stat.stat.exists
+
+- name: Dotfiles | Skip optional missing source with warning
+  ansible.builtin.debug:
+    msg: "Skipping optional link (missing source): {{ dotfiles_df_src_abs }} -> {{ dotfiles_df_dest_expanded }}"
+  when:
+    - not dotfiles_df_required
+    - (dotfiles_df_repo_info | length == 0) or (not dotfiles_df_src_stat.stat.exists)
+
+- name: Dotfiles | Ensure destination parent exists
+  ansible.builtin.file:
+    path: "{{ dotfiles_df_dest_parent }}"
+    state: directory
+    mode: "0755"
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+    - dotfiles_df_dest_parent != dotfiles_home
+
+- name: Dotfiles | Stat destination (no follow)
+  ansible.builtin.stat:
+    path: "{{ dotfiles_df_dest_expanded }}"
+    follow: false
+  register: dotfiles_df_dest_stat
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+
+- name: Dotfiles | Determine if destination is already correct link
+  ansible.builtin.set_fact:
+    dotfiles_df_dest_is_correct_link: >-
+      {{
+        dotfiles_df_dest_stat.stat.islnk
+        and (dotfiles_df_dest_stat.stat.lnk_source == dotfiles_df_src_abs)
+      }}
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+    - dotfiles_df_dest_stat.stat.exists | default(false)
+
+- name: Dotfiles | Backup destination (timestamped) before overwrite
+  ansible.builtin.command: >-
+    mv "{{ dotfiles_df_dest_expanded }}" "{{ dotfiles_df_dest_expanded }}{{ dotfiles_backup_suffix }}.{{ dotfiles_ts }}"
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+    - dotfiles_df_dest_stat.stat.exists | default(false)
+    - not (dotfiles_df_dest_is_correct_link | default(false))
+    - dotfiles_force_links | bool
+    - dotfiles_backup_existing | bool
+  changed_when: true
+
+- name: Dotfiles | Fail if destination exists and force is off
+  ansible.builtin.fail:
+    msg: "Destination exists and dotfiles_force_links=false: {{ dotfiles_df_dest_expanded }}"
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+    - dotfiles_df_dest_stat.stat.exists | default(false)
+    - not (dotfiles_df_dest_is_correct_link | default(false))
+    - not (dotfiles_force_links | bool)
+
+- name: Dotfiles | Create symlink
+  ansible.builtin.file:
+    src: "{{ dotfiles_df_src_abs }}"
+    dest: "{{ dotfiles_df_dest_expanded }}"
+    state: link
+    force: "{{ dotfiles_force_links | bool }}"
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  when:
+    - dotfiles_df_repo_info | length > 0
+    - dotfiles_df_src_stat.stat.exists
+    - not (dotfiles_df_dest_is_correct_link | default(false))

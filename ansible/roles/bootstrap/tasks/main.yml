@@ -1,0 +1,209 @@
+---
+- name: Bootstrap | Render pacman.conf from template
+  become: true
+  ansible.builtin.template:
+    src: pacman.conf.j2
+    dest: /etc/pacman.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Bootstrap | Initialize pacman keyring (best effort)
+  become: true
+  ansible.builtin.command: pacman-key --init
+  changed_when: false
+  failed_when: false
+
+- name: Bootstrap | Populate archlinux keyring
+  become: true
+  ansible.builtin.command: pacman-key --populate archlinux
+  changed_when: false
+
+- name: Bootstrap | Refresh archlinux-keyring before upgrade
+  become: true
+  community.general.pacman:
+    name: archlinux-keyring
+    state: latest
+    update_cache: true
+
+- name: Bootstrap | Full system upgrade
+  become: true
+  community.general.pacman:
+    upgrade: true
+    update_cache: true
+
+- name: Bootstrap | Install minimal bootstrap packages
+  become: true
+  community.general.pacman:
+    name: >-
+      {{
+        bootstrap_min_packages
+        + (['pacman-contrib'] if bootstrap_enable_paccache else [])
+        + (['reflector'] if bootstrap_use_reflector else [])
+      }}
+    state: present
+
+- name: Bootstrap | Enable and start systemd-timesyncd
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    enabled: true
+    state: started
+  when: bootstrap_enable_timesyncd | bool
+
+- name: Bootstrap | Enable paccache timer
+  become: true
+  ansible.builtin.systemd:
+    name: paccache.timer
+    enabled: true
+    state: started
+  when: bootstrap_enable_paccache | bool
+
+- name: Bootstrap | Run xdg-user-dirs-update for the login user
+  ansible.builtin.command: xdg-user-dirs-update
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  changed_when: false
+
+# --- Reflector (optional) ---
+- name: Bootstrap | Render reflector.conf
+  become: true
+  ansible.builtin.template:
+    src: reflector.conf.j2
+    dest: /etc/xdg/reflector/reflector.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: bootstrap_use_reflector | bool
+  notify: restart reflector
+
+- name: Bootstrap | Enable reflector timer
+  ansible.builtin.systemd:
+    name: reflector.timer
+    enabled: true
+    state: started
+  when: bootstrap_use_reflector | bool
+
+- name: Bootstrap | Disable reflector timer
+  become: true
+  ansible.builtin.systemd:
+    name: reflector.timer
+    enabled: false
+    state: stopped
+  when:
+    - bootstrap_use_reflector | bool
+    - not (bootstrap_reflector_run_on_boot | bool)
+
+- name: Bootstrap | Run reflector once now
+  become: true
+  ansible.builtin.command: reflector --config /etc/xdg/reflector/reflector.conf
+  changed_when: false
+  when:
+    - bootstrap_use_reflector | bool
+    - bootstrap_reflector_run_now | bool
+# -- Build User and privilege escalation
+- name: Bootstrap | Ensure sudo is installed
+  become: true
+  community.general.pacman:
+    name: sudo
+    state: present
+
+- name: Bootstrap | Ensure AUR builder user exists
+  become: true
+  ansible.builtin.user:
+    name: aurbuilder
+    create_home: true
+    shell: /usr/bin/nologin
+
+- name: Bootstrap | Allow aurbuilder to run pacman without password
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/10-aurbuilder
+    owner: root
+    group: root
+    mode: "0440"
+    content: |
+      aurbuilder ALL=(ALL) NOPASSWD: /usr/bin/pacman
+    validate: "visudo -cf %s"
+
+
+# --- AUR helper (optional) ---
+- name: Bootstrap | Install AUR helper prerequisites
+  become: true
+  community.general.pacman:
+    name:
+      - base-devel
+      - git
+      - cargo
+      - zsh
+    state: present
+
+- name: Bootstrap | Check if AUR helper is already installed
+  ansible.builtin.stat:
+    path: "/usr/bin/{{ bootstrap_aur_helper }}"
+  register: bootstrap_aur_helper_stat
+  when: bootstrap_install_aur_helper | bool
+
+- name: Bootstrap | Clone AUR helper # noqa: latest[git]
+  ansible.builtin.git:
+    repo: "https://aur.archlinux.org/{{ bootstrap_aur_helper }}.git"
+    dest: "/tmp/{{ bootstrap_aur_helper }}"
+    update: false
+  when:
+    - bootstrap_install_aur_helper | bool
+    - not bootstrap_aur_helper_stat.stat.exists
+
+- name: Bootstrap | Build AUR helper package (user)
+  ansible.builtin.command: makepkg -s --noconfirm
+  args:
+    chdir: "/tmp/{{ bootstrap_aur_helper }}"
+  when:
+    - bootstrap_install_aur_helper | bool
+    - not bootstrap_aur_helper_stat.stat.exists
+  changed_when: true
+
+- name: Bootstrap | Find built paru package (prefer non-debug)
+  ansible.builtin.find:
+    paths: "/tmp/{{ bootstrap_aur_helper }}"
+    patterns:
+      - "{{ bootstrap_aur_helper }}-[0-9]*.pkg.tar.*"
+    file_type: file
+  when:
+    - bootstrap_install_aur_helper | bool
+    - not bootstrap_aur_helper_stat.stat.exists
+  changed_when: true
+  register: bootstrap_pkg_find
+
+- name: Bootstrap | Install AUR helper package (root)
+  ansible.builtin.command: "pacman -U --noconfirm {{ (bootstrap_pkg_find.files | map(attribute='path') | list | first) }}"
+  when:
+    - bootstrap_install_aur_helper | bool
+    - not bootstrap_aur_helper_stat.stat.exists
+  become: true
+  changed_when: true
+
+# Systemd
+
+- name: Check if systemd-boot is used
+  become: true
+  ansible.builtin.stat:
+    path: /boot/loader/entries
+  register: bootstrap_systemd_boot
+
+
+- name: Enable and start systemd-boot-update.service
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-boot-update.service
+    enabled: true
+    state: started
+  when:
+    - bootstrap_systemd_boot.stat.exists
+    - ansible_service_mgr == "systemd"
+
+# User setup
+- name: Ensure default shell is /usr/bin/zsh for "{{ ansible_user }}"
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: /usr/bin/zsh

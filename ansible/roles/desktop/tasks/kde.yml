@@ -1,0 +1,7 @@
+---
+- name: Desktop | Install KDE packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install
+  vars:
+    packages_pacman_packages: "{{ desktop_kde_pacman_packages | default([]) }}"

@@ -1,0 +1,24 @@
+---
+- name: Storage | Install baseline tools
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ storage_pacman_packages_baseline }}"
+  when: storage_enable_baseline_tools | bool
+
+- name: Storage | Install backup tool (manual use only)
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: >-
+      {{
+        (storage_pacman_packages_borg if storage_backup_tool == 'borg' else [])
+        + (storage_pacman_packages_restic if storage_backup_tool == 'restic' else [])
+      }}
+  when: storage_backup_tool in ['borg', 'restic']
+
+- name: Storage | Configure snapper
+  ansible.builtin.include_tasks: snapper.yml
+  when: storage_enable_snapper | bool

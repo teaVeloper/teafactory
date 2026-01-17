@@ -1,0 +1,14 @@
+---
+- name: Hardware | bluetooth | Install packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ hardware_pacman_packages_bluetooth }}"
+
+- name: Hardware | bluetooth | Enable service
+  become: true
+  ansible.builtin.systemd:
+    name: bluetooth.service
+    enabled: true
+    state: started

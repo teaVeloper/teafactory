@@ -1,0 +1,28 @@
+---
+- name: Desktop | Shared
+  ansible.builtin.import_tasks: shared.yml
+
+- name: Desktop | Display manager
+  ansible.builtin.import_tasks: dm.yml
+  when: desktop_enable_dm | bool
+
+- name: Desktop | Qtile
+  ansible.builtin.import_tasks: qtile.yml
+  when: desktop_enable_qtile | bool
+
+- name: Desktop | KDE
+  ansible.builtin.import_tasks: kde.yml
+  when: desktop_enable_kde | bool
+
+- name: Desktop | GPU drivers
+  ansible.builtin.include_tasks: gpu.yml
+  when: desktop_enable_gpu_drivers | default(true) | bool
+
+- name: Desktop | Install fonts
+  become: true
+  community.general.pacman:
+    name: "{{ desktop_font_packages | default([]) }}"
+    state: present
+  when:
+    - desktop_enable_fonts | default(true) | bool
+    - (desktop_font_packages | default([])) | length > 0

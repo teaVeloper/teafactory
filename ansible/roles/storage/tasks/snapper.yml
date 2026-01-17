@@ -1,0 +1,79 @@
+---
+- name: Storage | snapper | Ensure snapper installed
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: >-
+      {{
+        storage_pacman_packages_snapper
+        + (storage_pacman_packages_snapper_hooks if storage_enable_snapper_pacman_hooks | bool else [])
+      }}
+
+- name: Storage | snapper | Assert root filesystem is btrfs
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.mounts | selectattr('mount', 'equalto', '/') | list | length > 0
+      - (ansible_facts.mounts | selectattr('mount', 'equalto', '/') | first).fstype == 'btrfs'
+    fail_msg: "Snapper requested but / is not btrfs. Refusing to configure snapper."
+
+- name: Storage | snapper | Check if snapper config exists
+  ansible.builtin.stat:
+    path: "/etc/snapper/configs/{{ storage_snapper_config_name }}"
+  register: storage_snapper_cfg
+
+- name: Storage | snapper | Create snapper config (only if missing)
+  become: true
+  ansible.builtin.command: "snapper -c {{ storage_snapper_config_name }} create-config {{ storage_snapper_config_path }}"
+  when: not storage_snapper_cfg.stat.exists
+  changed_when: true
+
+# Retention policy: edit /etc/snapper/configs/root
+- name: Storage | snapper | Configure timeline retention limits
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/etc/snapper/configs/{{ storage_snapper_config_name }}"
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}=\"{{ item.value }}\""
+    create: false
+  loop:
+    - { key: "TIMELINE_LIMIT_HOURLY", value: "{{ storage_snapper_timeline_limits.hourly }}" }
+    - { key: "TIMELINE_LIMIT_DAILY", value: "{{ storage_snapper_timeline_limits.daily }}" }
+    - { key: "TIMELINE_LIMIT_WEEKLY", value: "{{ storage_snapper_timeline_limits.weekly }}" }
+    - { key: "TIMELINE_LIMIT_MONTHLY", value: "{{ storage_snapper_timeline_limits.monthly }}" }
+    - { key: "TIMELINE_LIMIT_YEARLY", value: "{{ storage_snapper_timeline_limits.yearly }}" }
+
+# Schedule: override snapper-timeline.timer to weekly
+- name: Storage | snapper | Create systemd override dir for snapper-timeline.timer
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/system/snapper-timeline.timer.d
+    state: directory
+    mode: "0755"
+
+- name: Storage | snapper | Install snapper-timeline.timer override (weekly)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/snapper-timeline.timer.d/override.conf
+    mode: "0644"
+    content: |
+      [Timer]
+      OnCalendar=
+      OnCalendar={{ storage_snapper_timeline_oncalendar }}
+      RandomizedDelaySec={{ storage_snapper_timeline_randomized_delay_sec }}
+      Persistent=true
+
+- name: Storage | snapper | Reload systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Storage | snapper | Enable timers (timeline + cleanup)
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - snapper-timeline.timer
+    - snapper-cleanup.timer

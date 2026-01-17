@@ -1,0 +1,69 @@
+---
+# storage: safe baseline tools + optional snapper + optional backup tools
+
+# Baseline packages (safe everywhere)
+storage_enable_baseline_tools: true
+
+# Snapper snapshots (Btrfs only). This role will refuse to configure snapper if / is not btrfs.
+storage_enable_snapper: true
+storage_enable_snapper_pacman_hooks: true   # uses snap-pac on Arch
+
+# Timeline schedule: keep it simple and conservative
+storage_snapper_timeline_oncalendar: "weekly"   # systemd OnCalendar value
+storage_snapper_timeline_randomized_delay_sec: "1h"
+
+# Retention policy (approx 2-3 months)
+# Snapper config keys: TIMELINE_LIMIT_HOURLY/DAILY/WEEKLY/MONTHLY/YEARLY
+storage_snapper_timeline_limits:
+  hourly: "0"
+  daily: "0"
+  weekly: "12"
+  monthly: "0"
+  yearly: "0"
+
+# Backup tool install (manual usage only, no timers/services configured)
+storage_backup_tool: "borg"   # borg|restic|none
+
+# --- Packages ---
+storage_pacman_packages_baseline:
+  # filesystem tools
+  - util-linux
+  - e2fsprogs
+  - dosfstools
+  - exfatprogs
+  - ntfs-3g
+  - btrfs-progs
+
+  # inspection / convenience
+  - rsync
+  - compsize
+
+  # compression / archives (handy everywhere)
+  - tar
+  - unzip
+  - zip
+  - p7zip
+  - zstd
+  - gzip
+  - bzip2
+  - xz
+ # drive utils
+  - parted
+  - nvme-cli
+  - smartmontools
+
+storage_pacman_packages_snapper:
+  - snapper
+
+storage_pacman_packages_snapper_hooks:
+  - snap-pac
+
+storage_pacman_packages_borg:
+  - borg
+
+storage_pacman_packages_restic:
+  - restic
+
+# Snapper config name and target
+storage_snapper_config_name: "root"
+storage_snapper_config_path: "/"

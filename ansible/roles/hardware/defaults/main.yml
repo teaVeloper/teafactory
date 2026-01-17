@@ -1,0 +1,55 @@
+---
+# hardware: device support (udev, drivers, daemons). Not general apps.
+
+# Auto detection: "auto" tries to detect; true/false forces.
+hardware_enable_laptop: auto        # true|false|auto
+hardware_enable_bluetooth: auto     # true|false|auto
+
+# Peripherals
+hardware_enable_zsa: true
+hardware_enable_plover: false       # opt-in, even if ZSA is enabled
+hardware_enable_logitech: false     # opt-in
+hardware_enable_printer: false      # opt-in
+
+# Firmware updates
+hardware_enable_fwupd: true
+
+# --- Packages ---
+hardware_pacman_packages_bluetooth:
+  - bluez
+  - bluez-utils
+
+hardware_pacman_packages_laptop:
+  - power-profiles-daemon
+
+hardware_pacman_packages_fwupd:
+  - fwupd
+
+hardware_pacman_packages_printer:
+  - cups
+
+hardware_pacman_packages_zsa:
+  # keep this minimal; GUI deps should ideally live in desktop/apps if you prefer
+  - libusb
+
+# If you want to keep GUI deps here for ZSA tools (Keymapp/Kontroll), uncomment:
+#  - gtk3
+#  - webkit2gtk
+
+hardware_pacman_packages_logitech:
+  # logiops runs a daemon for button remaps / DPI etc.
+  - libevdev
+
+hardware_aur_packages_zsa:
+  - zsa-kontroll-bin
+  - zsa-keymapp-bin
+
+hardware_aur_packages_logitech:
+  - logiops
+
+hardware_aur_packages_plover:
+  - plover
+
+# --- Paths / files ---
+hardware_zsa_udev_rules_src: "50-zsa.rules"
+hardware_zsa_udev_rules_dest: "/etc/udev/rules.d/50-zsa.rules"

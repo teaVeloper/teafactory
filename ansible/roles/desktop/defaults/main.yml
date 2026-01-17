@@ -1,0 +1,69 @@
+---
+desktop_enable_qtile: true
+desktop_enable_kde: false
+
+desktop_enable_dm: true
+desktop_dm: sddm
+
+desktop_enable_gpu_drivers: true
+desktop_force_gpu: "auto"     # auto|amd|intel|nvidia|vm
+desktop_use_wayland_helpers: true
+
+
+desktop_shared_pacman_packages:
+  - kitty
+  - thunar
+  - evince
+  - zathura
+  - feh
+  - flameshot
+  - xdg-utils
+  - xdg-user-dirs
+  - networkmanager
+  - rofi
+  - xclip          # clipboard backend
+  - clipmenu       # clipboard manager (rofi-friendly)
+
+  # audio (pipewire)
+  - pipewire
+  - wireplumber
+  - pipewire-alsa
+  - pipewire-pulse
+  - pavucontrol   # optional but practical
+
+  # bluetooth plumbing
+  - bluez
+  - bluez-utils
+
+  # wayland x interaction
+  - xorg-xwayland # for wayland
+
+  # gpu
+  - mesa
+  - mesa-utils
+
+
+desktop_qtile_pacman_packages:
+  # X11 basics (if you run qtile on Xorg; keep minimal)
+  - xorg-server
+  - xorg-xrandr
+  # qtile necessities
+  - qtile
+  - dunst
+  - picom
+  - polkit-gnome    # polkit agent for non-KDE sessions (important)
+
+desktop_kde_pacman_packages:
+  - plasma-desktop
+  - plasma-workspace
+  - xdg-desktop-portal-kde
+  - kde-gtk-config
+  - kdeplasma-addons
+
+desktop_enable_fonts: true
+desktop_font_packages:
+  - ttf-dejavu
+  - noto-fonts
+  - noto-fonts-cjk
+  - noto-fonts-emoji
+  - ttf-jetbrains-mono-nerd

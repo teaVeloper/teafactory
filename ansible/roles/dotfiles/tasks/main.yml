@@ -1,0 +1,54 @@
+---
+- name: Dotfiles | Capture timestamp for backups
+  ansible.builtin.set_fact:
+    dotfiles_ts: "{{ lookup('pipe', 'date +%Y%m%d-%H%M%S') }}"
+
+- name: Dotfiles | Compute XDG base dirs (defaults if unset)
+  ansible.builtin.set_fact:
+    dotfiles_home: "{{ ansible_facts.env.HOME }}"
+    dotfiles_xdg_config_home: "{{ ansible_facts.env.XDG_CONFIG_HOME | default(ansible_facts.env.HOME + '/.config') }}"
+    dotfiles_xdg_data_home: "{{ ansible_facts.env.XDG_DATA_HOME | default(ansible_facts.env.HOME + '/.local/share') }}"
+    dotfiles_xdg_cache_home: "{{ ansible_facts.env.XDG_CACHE_HOME | default(ansible_facts.env.HOME + '/.cache') }}"
+    dotfiles_xdg_state_home: "{{ ansible_facts.env.XDG_STATE_HOME | default(ansible_facts.env.HOME + '/.local/state') }}"
+
+- name: Dotfiles | Load teagarden manifest
+  ansible.builtin.include_vars:
+    file: "{{ dotfiles_teagarden_manifest_path }}"
+    name: tg
+
+- name: Dotfiles | Ensure TEAGARDEN_HOME exists
+  ansible.builtin.file:
+    path: "{{ dotfiles_teagarden_home }}"
+    state: directory
+    mode: "0755"
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+
+- name: Dotfiles | Clone all teagarden repos
+  ansible.builtin.git:  # noqa: latest[git]
+    repo: "{{ item.value['url_' + dotfiles_git_transport] }}"
+    dest: "{{ dotfiles_teagarden_home }}/{{ item.value.path }}"
+    update: false
+    accept_hostkey: true
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  loop: "{{ tg.repos | dict2items }}"
+
+- name: Dotfiles | Determine targets dir
+  ansible.builtin.set_fact:
+    dotfiles_targets_dir: "{{ tg.repos['teashellf'].targets_dir | default('targets') }}"
+
+- name: Dotfiles | Find all target files
+  ansible.builtin.find:
+    paths: "{{ dotfiles_teagarden_home }}/{{ tg.repos['teashellf'].path }}/{{ dotfiles_targets_dir }}"
+    patterns: "*.yml"
+    file_type: file
+  register: dotfiles_target_find
+
+- name: Dotfiles | Apply each targets file
+  ansible.builtin.include_tasks: apply_target_file.yml
+  loop: "{{ dotfiles_target_find.files }}"
+  loop_control:
+    loop_var: dotfiles_target_file
+  vars:
+    df_target_file: "{{ dotfiles_target_file.path }}"

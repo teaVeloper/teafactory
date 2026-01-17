@@ -1,0 +1,25 @@
+---
+- name: Packages | Install pacman packages
+  become: true
+  community.general.pacman:
+    name: "{{ packages_pacman_packages | default([]) }}"
+    state: present
+  when: (packages_pacman_packages | default([])) | length > 0
+
+- name: Packages | Install AUR packages (build as user)
+  kewlfft.aur.aur:
+    name: "{{ packages_aur_packages | default([]) }}"
+    state: present
+    use: "{{ bootstrap_aur_helper | default('paru') }}"
+  become: true
+  become_user: aurbuilder
+  when: (packages_aur_packages | default([])) | length > 0
+
+- name: Packages | Install flatpaks (user install by default)
+  community.general.flatpak:
+    name: "{{ packages_flatpak_packages | default([]) }}"
+    state: present
+    method: "{{ flatpak_method | default('user') }}"
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  when: (packages_flatpak_packages | default([])) | length > 0

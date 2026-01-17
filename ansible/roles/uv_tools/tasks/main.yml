@@ -1,0 +1,33 @@
+---
+- name: UV Tools | Ensure uv is installed
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages:
+      - python-uv
+  when: uv_tools_enable | bool
+
+- name: UV Tools | Ensure ~/.local/bin exists
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+    mode: "0755"
+  when: uv_tools_enable | bool
+
+- name: UV Tools | Install required uv tools (user scope)
+  become: true
+  become_user: "{{ ansible_facts.user_id }}"
+  ansible.builtin.command: "uv tool install {{ item }}"
+  loop: "{{ (uv_tools_required | default([])) + (uv_tools_extras | default([])) }}"
+  register: uv_tool_install
+  changed_when: >
+    ('Installed' in (uv_tool_install.stdout | default('')))
+    or ('installed' in (uv_tool_install.stdout | default('')))
+    or ('Updated' in (uv_tool_install.stdout | default('')))
+    or ('updated' in (uv_tool_install.stdout | default('')))
+  when:
+    - uv_tools_enable | bool
+    - ((uv_tools_required | default([])) + (uv_tools_extras | default([]))) | length > 0

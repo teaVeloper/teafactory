@@ -1,0 +1,15 @@
+# Managed by Ansible: security_baseline
+
+Defaults lecture=once
+Defaults timestamp_timeout=5
+Defaults passwd_timeout=1
+Defaults use_pty
+Defaults editor=/usr/bin/nvim
+
+# Optional: log sudo invocations to a file
+# (journald already captures this)
+# Defaults logfile="/var/log/sudo.log"
+
+{% if security_require_wheel_for_sudo | bool %}
+%wheel ALL=(ALL:ALL) ALL
+{% endif %}

@@ -1,0 +1,15 @@
+---
+- name: Desktop | Install display manager
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install
+  vars:
+    packages_pacman_packages:
+      - "{{ desktop_dm | default('sddm') }}"
+
+- name: Desktop | Enable display manager service
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ (desktop_dm | default('sddm')) }}.service"
+    enabled: true
+    state: started

@@ -1,0 +1,8 @@
+---
+dotfiles_teagarden_home: "{{ ansible_facts.env.HOME }}/src/teagarden"
+dotfiles_teagarden_manifest_path: "{{ playbook_dir }}/teagarden/manifest.yml"
+dotfiles_git_transport: "https"   # or ssh
+
+dotfiles_force_links: true
+dotfiles_backup_existing: true
+dotfiles_backup_suffix: ".bk"

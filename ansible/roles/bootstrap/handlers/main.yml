@@ -1,0 +1,12 @@
+---
+- name: Restart systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted
+  become: true
+
+- name: Restart reflector
+  ansible.builtin.systemd:
+    name: reflector.timer
+    state: restarted
+  become: true

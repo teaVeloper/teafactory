@@ -1,0 +1,14 @@
+---
+- name: Hardware | fwupd | Install packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ hardware_pacman_packages_fwupd }}"
+
+- name: Hardware | fwupd | Enable service
+  become: true
+  ansible.builtin.systemd:
+    name: fwupd.service
+    enabled: true
+    state: started

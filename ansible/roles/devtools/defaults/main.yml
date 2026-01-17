@@ -1,0 +1,70 @@
+---
+# devtools_mode: core | full | work
+devtools_mode: core
+
+# Optional feature toggles (only a few; keep it sane)
+devtools_enable_containers: false     # docker/docker-compose
+devtools_enable_tex: true             # you said pandoc->pdf on almost any machine
+devtools_enable_tex_extra: false      # latexextra/pictures (uni/admin)
+devtools_enable_lang: true            # rustup/go
+devtools_enable_admin: false          # ansible (and maybe later etckeeper)
+
+# ---- Canonical package groups (pacman/aur only) ----
+
+devtools_pacman_core:
+  - python-uv
+  - pandoc
+  - gcc
+  - gdb
+  - valgrind
+  - make
+  - cmake
+  - ninja
+  - pkgconf
+  - shellcheck
+  - shfmt
+  - hyperfine
+  - just
+
+devtools_aur_core: []
+  # - mise # via aur is pain as self-update wont work
+
+devtools_pacman_lang:
+  # - rustup # rustup conflicts with rust build chain this way, removed for now
+  - go
+
+devtools_pacman_containers:
+  - docker
+  - docker-compose
+
+devtools_pacman_admin:
+  - ansible
+
+devtools_pacman_tex_base:
+  - texlive-core
+
+devtools_pacman_tex_extra:
+  - texlive-latexextra
+  - texlive-pictures
+
+# Work infra (I keep these here so devtools can provide "work mode")
+devtools_pacman_work:
+  - terraform
+  - aws-cli
+  - openfortivpn
+
+# If you later decide databricks-cli via AUR, put it here; for now keep empty
+# devtools_aur_work:
+#   - databricks-cli
+
+# ---- Escape hatches for host/group vars ----
+devtools_extra_pacman: []
+devtools_extra_aur: []
+devtools_extra_flatpak: []
+
+# Rustup bootstrap (minimal)
+devtools_enable_rustup_bootstrap: true
+devtools_rustup_default_toolchain: stable
+devtools_rustup_components:
+  - rustfmt
+  - clippy

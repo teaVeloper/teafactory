@@ -1,0 +1,112 @@
+---
+- name: Security | Ensure wheel group exists
+  become: true
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
+- name: Security | Add user to wheel group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: wheel
+    append: true
+  when: security_add_user_to_wheel | bool
+
+- name: Security | Ensure docker group exists (optional)
+  become: true
+  ansible.builtin.group:
+    name: docker
+    state: present
+  when: security_enable_docker_group | bool
+
+- name: Security | Add user to docker group (optional)
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: true
+  when:
+    - security_enable_docker_group | bool
+    - security_add_user_to_docker | bool
+
+- name: Security | Add user to extra groups
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: "{{ security_extra_groups }}"
+    append: true
+  when: (security_extra_groups | default([])) | length > 0
+
+# ---- sudo baseline ----
+- name: Security | Ensure sudoers.d exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/sudoers.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Security | Install sudo baseline policy
+  become: true
+  ansible.builtin.template:
+    src: sudoers-10-security-baseline.j2
+    dest: /etc/sudoers.d/10-security-baseline
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+
+# ---- sysctl baseline ----
+- name: Security | Install sysctl baseline config
+  become: true
+  ansible.builtin.template:
+    src: sysctl-50-security-baseline.conf.j2
+    dest: /etc/sysctl.d/50-security-baseline.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: security_apply_sysctl_baseline | bool
+
+- name: Security | Reload sysctl
+  become: true
+  ansible.builtin.command: sysctl --system
+  changed_when: false
+  when: security_apply_sysctl_baseline | bool
+
+# ---- sshd assertion ----
+- name: Security | Ensure sshd is disabled unless explicitly enabled
+  become: true
+  ansible.builtin.systemd:
+    name: sshd.service
+    enabled: false
+    state: stopped
+  when:
+    - security_ensure_sshd_disabled | bool
+    - not (security_enable_sshd | bool)
+
+# ---- optional firewall ----
+- name: Security | Install ufw (optional)
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages:
+      - ufw
+  when:
+    - security_enable_firewall | bool
+    - security_firewall_tool == 'ufw'
+
+- name: Security | Enable ufw with client policy (optional)
+  become: true
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - ufw --force reset
+    - ufw default deny incoming
+    - ufw default allow outgoing
+    - ufw --force enable
+  changed_when: false
+  when:
+    - security_enable_firewall | bool
+    - security_firewall_tool == 'ufw'

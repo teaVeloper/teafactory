@@ -1,0 +1,14 @@
+---
+- name: Hardware | printer | Install packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ hardware_pacman_packages_printer }}"
+
+- name: Hardware | printer | Enable service
+  become: true
+  ansible.builtin.systemd:
+    name: cups.service
+    enabled: true
+    state: started

@@ -1,0 +1,8 @@
+---
+- name: Desktop | Install shared desktop packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install
+  vars:
+    packages_pacman_packages: "{{ desktop_shared_pacman_packages | default([]) }}"
+    packages_aur_packages: "{{ desktop_shared_aur_packages | default([]) }}"

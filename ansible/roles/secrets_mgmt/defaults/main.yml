@@ -1,0 +1,43 @@
+---
+# Opinionated baseline secrets stack for your machines.
+
+# Enable full YubiKey tooling (single knob).
+secrets_mgmt_enable_yubikey: true
+
+# Enable python-keyring backend that reads from pass/pass-like store.
+# Arch AUR: python-keyring-pass
+secrets_mgmt_enable_keyring_pass_backend: true
+
+# Base packages: always installed.
+secrets_mgmt_pacman_packages_base:
+  - age
+  - gnupg
+  - age-plugin-yubikey
+  - python-keyring
+  - oath-toolkit
+  - pass-otp
+  # Clipboard: install both so Qtile/X11 and Wayland cases are covered
+  - xclip
+  - wl-clipboard
+  - qrencode
+  - zbar
+
+# YubiKey packages: installed when enabled.
+secrets_mgmt_pacman_packages_yubikey:
+  - libfido2
+  - yubikey-manager
+  - yubico-piv-tool
+  - yubico-pam
+  - pam-u2f
+  - yubikey-personalization
+  - ccid
+  - pcsclite
+  # - yubioath-desktop
+
+# AUR packages: keep minimal and explicit.
+secrets_mgmt_aur_packages_base:
+  - passage-git
+  # - yubikey-agent # install is broken
+
+secrets_mgmt_aur_packages_keyring:
+  - python-keyring-pass

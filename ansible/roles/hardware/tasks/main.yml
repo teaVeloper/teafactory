@@ -1,0 +1,61 @@
+---
+# --- auto detection ---
+- name: Hardware | Detect laptop (BAT* present)
+  ansible.builtin.shell: "ls /sys/class/power_supply/BAT* >/dev/null 2>&1"
+  register: hardware_bat_check
+  changed_when: false
+  failed_when: false
+
+- name: Hardware | Set laptop fact (auto)
+  ansible.builtin.set_fact:
+    hardware_is_laptop: "{{ hardware_enable_laptop == 'true' or (hardware_enable_laptop == 'auto' and hardware_bat_check.rc == 0) }}"
+  when: hardware_enable_laptop in ['auto', 'true', 'false']
+
+- name: Hardware | Set laptop fact (forced)
+  ansible.builtin.set_fact:
+    hardware_is_laptop: "{{ hardware_enable_laptop | bool }}"
+  when: hardware_enable_laptop in ['true', 'false']
+
+- name: Hardware | Detect bluetooth (sysfs)
+  ansible.builtin.stat:
+    path: /sys/class/bluetooth
+  register: hardware_bluetooth_sys
+
+- name: Hardware | Set bluetooth fact (auto)
+  ansible.builtin.set_fact:
+    hardware_has_bluetooth: >-
+      {{
+        (hardware_enable_bluetooth == 'true') or
+        (hardware_enable_bluetooth == 'auto' and (hardware_bluetooth_sys.stat.exists | default(false)))
+      }}
+  when: hardware_enable_bluetooth in ['auto', 'true', 'false']
+
+- name: Hardware | Set bluetooth fact (forced)
+  ansible.builtin.set_fact:
+    hardware_has_bluetooth: "{{ hardware_enable_bluetooth | bool }}"
+  when: hardware_enable_bluetooth in ['true', 'false']
+
+# --- feature includes ---
+- name: Hardware | fwupd
+  ansible.builtin.include_tasks: fwupd.yml
+  when: hardware_enable_fwupd | bool
+
+- name: Hardware | bluetooth
+  ansible.builtin.include_tasks: bluetooth.yml
+  when: hardware_has_bluetooth | bool
+
+- name: Hardware | laptop power
+  ansible.builtin.include_tasks: laptop.yml
+  when: hardware_is_laptop | bool
+
+- name: Hardware | printer
+  ansible.builtin.include_tasks: printer.yml
+  when: hardware_enable_printer | bool
+
+- name: Hardware | logitech
+  ansible.builtin.include_tasks: logitech.yml
+  when: hardware_enable_logitech | bool
+
+- name: Hardware | zsa keyboards
+  ansible.builtin.include_tasks: zsa.yml
+  when: hardware_enable_zsa | bool

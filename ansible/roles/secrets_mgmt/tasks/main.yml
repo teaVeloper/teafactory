@@ -1,0 +1,32 @@
+---
+- name: Secret Management | Build pacman package list
+  ansible.builtin.set_fact:
+    secrets_mgmt__pacman_packages: >-
+      {{
+        secrets_mgmt_pacman_packages_base
+        + (secrets_mgmt_pacman_packages_yubikey if (secret_mgmt_enable_yubikey | bool) else [])
+      }}
+
+- name: Secret Management | Build AUR package list
+  ansible.builtin.set_fact:
+    secrets_mgmt__aur_packages: >-
+      {{
+        secrets_mgmt_aur_packages_base
+        + (secrets_mgmt_aur_packages_keyring if (secret_mgmt_enable_keyring_pass_backend | bool) else [])
+      }}
+
+- name: Secret Management | Install packages via shared packages role
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ secrets_mgmt__pacman_packages | unique }}"
+    packages_aur_packages: "{{ secrets_mgmt__aur_packages | unique }}"
+
+- name: Secret Management | Enable pcscd (required for CCID/smartcard workflows)
+  become: true
+  ansible.builtin.systemd:
+    name: pcscd
+    enabled: true
+    state: started
+  when: secrets_mgmt_enable_yubikey | bool

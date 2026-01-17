@@ -1,0 +1,20 @@
+---
+# Group / sudo policy
+security_add_user_to_wheel: true
+security_require_wheel_for_sudo: true
+
+security_enable_docker_group: false
+security_add_user_to_docker: false
+
+security_extra_groups: []
+
+# Sysctl
+security_apply_sysctl_baseline: true
+
+# SSH
+security_ensure_sshd_disabled: true
+security_enable_sshd: false
+
+# Firewall (client-side, optional)
+security_enable_firewall: false
+security_firewall_tool: ufw

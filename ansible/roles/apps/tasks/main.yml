@@ -1,0 +1,38 @@
+---
+- name: Apps | Apply mode defaults
+  ansible.builtin.set_fact:
+    apps_enable_heavy_media: "{{ true if apps_mode in ['full'] else apps_enable_heavy_media }}"
+    apps_enable_creative: "{{ true if apps_mode in ['full'] else apps_enable_creative }}"
+    apps_enable_private_messaging: "{{ true if apps_mode in ['private', 'full'] else apps_enable_private_messaging }}"
+    apps_enable_uni_apps: "{{ true if apps_mode in ['uni', 'full'] else apps_enable_uni_apps }}"
+  when: apps_mode != 'core'
+
+- name: Apps | Compute package selection
+  ansible.builtin.set_fact:
+    _apps_pacman: >-
+      {{
+        (apps_pacman_core | default([]))
+        + ((apps_pacman_media_heavy | default([])) if (apps_enable_heavy_media | bool) else [])
+        + ((apps_pacman_creative | default([])) if (apps_enable_creative | bool) else [])
+        + ((apps_pacman_private_messaging | default([])) if (apps_enable_private_messaging | bool) else [])
+        + ((apps_pacman_uni | default([])) if (apps_enable_uni_apps | bool) else [])
+        + (apps_extra_pacman | default([]))
+      }}
+    _apps_aur: >-
+      {{
+        (
+          (apps_aur_mail_betterbird | default([]))
+          if apps_mail_variant == 'betterbird' else []
+        )
+        + (apps_extra_aur | default([]))
+      }}
+    _apps_flatpak: "{{ apps_extra_flatpak | default([]) }}"
+
+- name: Apps | Install selected packages
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ _apps_pacman | unique }}"
+    packages_aur_packages: "{{ _apps_aur | unique }}"
+    packages_flatpak_packages: "{{ _apps_flatpak | unique }}"

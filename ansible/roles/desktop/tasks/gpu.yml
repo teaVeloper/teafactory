@@ -1,0 +1,70 @@
+---
+- name: Desktop | Detect GPU (lspci)
+  ansible.builtin.command: lspci -nnk
+  register: desktop_lspci
+  changed_when: false
+
+- name: Desktop | Classify GPU vendor
+  ansible.builtin.set_fact:
+    desktop_gpu_vendor: >-
+      {% if (desktop_force_gpu | default('auto')) != 'auto' %}
+      {{ desktop_force_gpu }}
+      {% else %}
+      {% set s = desktop_lspci.stdout | lower %}
+      {% if 'nvidia' in s %}
+      nvidia
+      {% elif 'amd' in s or 'advanced micro devices' in s or 'ati' in s %}
+      amd
+      {% elif 'intel' in s %}
+      intel
+      {% elif 'virtio' in s or 'qxl' in s or 'vmware' in s %}
+      vm
+      {% else %}
+      unknown
+      {% endif %}
+      {% endif %}
+
+- name: Desktop | Debug GPU vendor
+  ansible.builtin.debug:
+    msg: "Detected GPU vendor: {{ desktop_gpu_vendor }}"
+
+# --- AMD graphics (no compute) ---
+- name: Desktop | Install GPU drivers (AMD)
+  become: true
+  community.general.pacman:
+    name:
+      - vulkan-radeon
+      - libva-mesa-driver
+      - mesa-vdpau
+    state: present
+  when: desktop_gpu_vendor == 'amd'
+
+# --- Intel graphics (no compute) ---
+- name: Desktop | Install GPU drivers (Intel)
+  become: true
+  community.general.pacman:
+    name:
+      - vulkan-intel
+      - intel-media-driver
+    state: present
+  when: desktop_gpu_vendor == 'intel'
+
+# --- NVIDIA graphics (no compute) ---
+- name: Desktop | Install GPU drivers (NVIDIA)
+  become: true
+  community.general.pacman:
+    name:
+      - nvidia
+      - nvidia-utils
+      - egl-wayland
+    state: present
+  when: desktop_gpu_vendor == 'nvidia'
+
+# --- VM fallback (usually already ok with mesa; keep tiny) ---
+- name: Desktop | Install GPU helpers (VM)
+  become: true
+  community.general.pacman:
+    name:
+      - mesa
+    state: present
+  when: desktop_gpu_vendor == 'vm'

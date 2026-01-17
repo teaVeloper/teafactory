@@ -1,0 +1,29 @@
+---
+bootstrap_install_aur_helper: true
+bootstrap_aur_helper: "paru"   # or yay
+
+bootstrap_min_packages:
+  - base-devel
+  - git
+  - curl
+  - rsync
+  - sudo
+  - xdg-user-dirs
+
+bootstrap_enable_timesyncd: true
+bootstrap_enable_paccache: true
+
+# Mirrors
+bootstrap_use_reflector: false
+bootstrap_reflector_countries: ["Austria", "Germany"]
+bootstrap_reflector_protocols: ["https"]
+bootstrap_reflector_latest: 20
+bootstrap_reflector_sort: "rate"
+bootstrap_reflector_save_path: "/etc/pacman.d/mirrorlist"
+bootstrap_reflector_run_on_boot: true   # timer
+bootstrap_reflector_run_now: true       # immediate refresh
+
+# Pacman repos
+bootstrap_pacman_multilib: true
+bootstrap_pacman_parallel_downloads: 5
+bootstrap_pacman_download_user: "alpm"

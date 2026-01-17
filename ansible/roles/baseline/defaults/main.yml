@@ -1,0 +1,25 @@
+---
+baseline_pacman_packages:
+  - xclip
+  - neovim
+  - wget
+  - curl
+  - ripgrep
+  - fd
+  - bat
+  - fzf
+  - eza
+  - git
+  - git-delta
+  - zsh
+  - zsh-completions
+  - bash
+  - bash-completion
+  - man-db
+  - man-pages
+  - unzip
+  - zip
+  - python-uv
+
+baseline_aur_packages:
+  - zsh-antidote
