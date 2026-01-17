@@ -1,0 +1,13 @@
+[project]
+name = "teafactory"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "ansible>=13.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "ansible-lint>=26.1.0",
+    "yamllint>=1.37.1",
+]
