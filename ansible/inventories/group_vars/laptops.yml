@@ -1,0 +1,5 @@
+hardware_enable_laptop: true
+hardware_enable_bluetooth: true
+
+# optional future
+# hardware_enable_kanata: true

@@ -1,0 +1,6 @@
+- name: Teafactory | quick
+  hosts: all
+  roles:
+    - bootstrap
+    - baseline
+    - dotfiles

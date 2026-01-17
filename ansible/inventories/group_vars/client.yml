@@ -1,0 +1,6 @@
+devtools_mode: core
+apps_mode: private
+
+apps_enable_heavy_media: true
+apps_enable_creative: true
+apps_enable_uni_apps: false

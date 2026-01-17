@@ -1,0 +1,7 @@
+devtools_mode: full          # or keep core + enable_tex_extra; your choice
+devtools_enable_tex_extra: true
+apps_mode: uni
+
+apps_enable_heavy_media: true
+apps_enable_creative: true
+apps_enable_private_messaging: true

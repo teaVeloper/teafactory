@@ -1,0 +1,15 @@
+---
+- name: Teafactory | full
+  hosts: all
+  roles:
+    - bootstrap
+    - baseline
+    - dotfiles
+    - desktop
+    - secrets_mgmt
+    - hardware
+    - storage
+    - uv_tools
+    - devtools
+    - apps
+    - security_baseline

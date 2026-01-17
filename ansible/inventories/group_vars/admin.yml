@@ -1,0 +1,5 @@
+devtools_mode: full
+apps_mode: full
+
+security_enable_docker_group: true
+security_add_user_to_docker: true
