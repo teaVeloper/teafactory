@@ -21,3 +21,6 @@ rules:
   octal-values:
     forbid-implicit-octal: true
     forbid-explicit-octal: true
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
