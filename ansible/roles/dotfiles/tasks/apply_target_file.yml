@@ -4,11 +4,18 @@
     src: "{{ df_target_file }}"
   register: dotfiles_target_slurp
 
-- name: Dotfiles | Parse target YAML # noqa var-naming
+- name: Dotfiles | Parse target YAML
   ansible.builtin.set_fact:
     df_file: "{{ (dotfiles_target_slurp.content | b64decode) | from_yaml }}"
 
-- name: Dotfiles | Apply links from target file # noqa var-naming
+# 1) Apply ensure first (dirs/files)
+- name: Dotfiles | Apply ensure (dirs/files) from target file
+  ansible.builtin.include_tasks: ensure.yml
+  vars:
+    df_ensure: "{{ df_file.ensure | default({}) }}"
+
+# 2) Apply links
+- name: Dotfiles | Apply links from target file
   ansible.builtin.include_tasks: apply_link.yml
   loop: "{{ df_file.links | default([]) }}"
   loop_control:

@@ -1,0 +1,14 @@
+---
+- name: Dotfiles | Ensure | Dirs
+  ansible.builtin.include_tasks: ensure_dir.yml
+  loop: "{{ df_ensure.dirs | default([]) }}"
+  loop_control:
+    loop_var: ensure_item
+    label: "{{ ensure_item.path }}"
+
+- name: Dotfiles | Ensure | Files
+  ansible.builtin.include_tasks: ensure_file.yml
+  loop: "{{ df_ensure.files | default([]) }}"
+  loop_control:
+    loop_var: ensure_item
+    label: "{{ ensure_item.path }}"

@@ -1,0 +1,30 @@
+---
+- name: Dotfiles | Ensure file | Init
+  ansible.builtin.set_fact:
+    ensure_path: "{{ ensure_item.path }}"
+
+- name: Dotfiles | Ensure file | Expand vars
+  ansible.builtin.set_fact:
+    ensure_path: "{{ ensure_path | replace(item.key, item.value) }}"
+  loop: "{{ dotfiles_path_expansions }}"
+
+- name: Dotfiles | Ensure file | Fail if unexpanded
+  ansible.builtin.fail:
+    msg: "Ensure file still contains unexpanded vars: {{ ensure_item.path }} -> {{ ensure_path }}"
+  when: ensure_path is search('\\$[A-Z_]+')
+
+- name: Dotfiles | Ensure file | Ensure parent exists
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  ansible.builtin.file:
+    path: "{{ ensure_path | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Dotfiles | Ensure file | Touch
+  become: true
+  become_user: "{{ ansible_user_id }}"
+  ansible.builtin.file:
+    path: "{{ ensure_path }}"
+    state: touch
+    mode: "{{ ensure_item.mode | default('0644') }}"

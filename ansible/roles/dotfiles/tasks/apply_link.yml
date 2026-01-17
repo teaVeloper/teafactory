@@ -32,13 +32,7 @@
 - name: Dotfiles | Expand destination variables
   ansible.builtin.set_fact:
     dotfiles_df_dest_expanded: "{{ dotfiles_df_dest_expanded | replace(item.key, item.value) }}"
-  loop:
-    - { key: "$HOME", value: "{{ dotfiles_home }}" }
-    - { key: "$XDG_CONFIG_HOME", value: "{{ dotfiles_xdg_config_home }}" }
-    - { key: "$XDG_DATA_HOME", value: "{{ dotfiles_xdg_data_home }}" }
-    - { key: "$XDG_CACHE_HOME", value: "{{ dotfiles_xdg_cache_home }}" }
-    - { key: "$XDG_STATE_HOME", value: "{{ dotfiles_xdg_state_home }}" }
-    - { key: "$TEAGARDEN_HOME", value: "{{ dotfiles_teagarden_home }}" }
+  loop: "{{ dotfiles_path_expansions }}"
   when: dotfiles_df_repo_info | length > 0
 
 - name: Dotfiles | Fail if destination still contains unexpanded variables

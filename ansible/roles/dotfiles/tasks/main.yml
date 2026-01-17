@@ -11,6 +11,16 @@
     dotfiles_xdg_cache_home: "{{ ansible_facts.env.XDG_CACHE_HOME | default(ansible_facts.env.HOME + '/.cache') }}"
     dotfiles_xdg_state_home: "{{ ansible_facts.env.XDG_STATE_HOME | default(ansible_facts.env.HOME + '/.local/state') }}"
 
+- name: Dotfiles | Define path expansion map
+  ansible.builtin.set_fact:
+    dotfiles_path_expansions:
+      - { key: "$HOME", value: "{{ dotfiles_home }}" }
+      - { key: "$XDG_CONFIG_HOME", value: "{{ dotfiles_xdg_config_home }}" }
+      - { key: "$XDG_DATA_HOME", value: "{{ dotfiles_xdg_data_home }}" }
+      - { key: "$XDG_CACHE_HOME", value: "{{ dotfiles_xdg_cache_home }}" }
+      - { key: "$XDG_STATE_HOME", value: "{{ dotfiles_xdg_state_home }}" }
+      - { key: "$TEAGARDEN_HOME", value: "{{ dotfiles_teagarden_home }}" }
+
 - name: Dotfiles | Load teagarden manifest
   ansible.builtin.include_vars:
     file: "{{ dotfiles_teagarden_manifest_path }}"
