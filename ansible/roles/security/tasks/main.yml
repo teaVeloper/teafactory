@@ -86,6 +86,14 @@
     - security_ensure_sshd_disabled | bool
     - not (security_enable_sshd | bool)
 
+- name: Security | Ensure sshd is enabled when requested
+  become: true
+  ansible.builtin.systemd:
+    name: sshd.service
+    enabled: true
+    state: started
+  when: security_enable_sshd | bool
+
 # ---- optional firewall ----
 - name: Security | Install ufw (optional)
   ansible.builtin.include_role:
