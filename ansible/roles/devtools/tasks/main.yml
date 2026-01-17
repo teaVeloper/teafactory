@@ -1,42 +1,4 @@
 ---
-- name: Devtools | Compute package selection
-  ansible.builtin.set_fact:
-    _devtools_pacman: >-
-      {{
-        (devtools_pacman_core | default([]))
-        + (
-            (devtools_pacman_lang | default([]))
-            if (devtools_enable_lang | bool) else []
-          )
-        + (
-            (devtools_pacman_containers | default([]))
-            if (devtools_enable_containers | bool) else []
-          )
-        + (
-            (devtools_pacman_admin | default([]))
-            if (devtools_enable_admin | bool) else []
-          )
-        + (
-            (devtools_pacman_tex_base | default([]))
-            if (devtools_enable_tex | bool) else []
-          )
-        + (
-            (devtools_pacman_tex_extra | default([]))
-            if (devtools_enable_tex_extra | bool) else []
-          )
-        + (
-            (devtools_pacman_work | default([]))
-            if (devtools_mode in ['work', 'full'] ) else []
-          )
-        + (devtools_extra_pacman | default([]))
-      }}
-    _devtools_aur: >-
-      {{
-        (devtools_aur_core | default([]))
-        + (devtools_extra_aur | default([]))
-      }}
-    _devtools_flatpak: "{{ devtools_extra_flatpak | default([]) }}"
-
 - name: Devtools | Apply mode defaults (opinionated)
   ansible.builtin.set_fact:
     devtools_enable_containers: "{{ true if devtools_mode in ['full', 'work'] else devtools_enable_containers }}"
@@ -44,8 +6,7 @@
     devtools_enable_lang: "{{ true if devtools_mode in ['full', 'work'] else devtools_enable_lang }}"
   when: devtools_mode != 'core'
 
-# Recompute after mode defaults changed
-- name: Devtools | Recompute package selection after mode defaults
+- name: Devtools | Compute package selection
   ansible.builtin.set_fact:
     _devtools_pacman: >-
       {{
@@ -65,7 +26,7 @@
       }}
     _devtools_flatpak: "{{ devtools_extra_flatpak | default([]) }}"
 
-- name: Devtools | Install selected packages (pacman/aur/flatpak)
+- name: Devtools | Install selected packages
   ansible.builtin.include_role:
     name: packages
     tasks_from: install.yml
@@ -73,37 +34,3 @@
     packages_pacman_packages: "{{ _devtools_pacman | unique }}"
     packages_aur_packages: "{{ _devtools_aur | unique }}"
     packages_flatpak_packages: "{{ _devtools_flatpak | unique }}"
-
-- name: Devtools | Check if rustup exists
-  become: true
-  become_user: "{{ ansible_facts.user_id }}"
-  ansible.builtin.command: "command -v rustup"
-  register: _rustup_present
-  changed_when: false
-  failed_when: false
-
-- name: Devtools | Ensure default rust toolchain is installed
-  become: true
-  become_user: "{{ ansible_facts.user_id }}"
-  ansible.builtin.command: "rustup toolchain install {{ devtools_rustup_default_toolchain }}"
-  when:
-    - devtools_enable_rustup_bootstrap | bool
-    - _rustup_present.rc == 0
-
-- name: Devtools | Set default rust toolchain
-  become: true
-  become_user: "{{ ansible_facts.user_id }}"
-  ansible.builtin.command: "rustup default {{ devtools_rustup_default_toolchain }}"
-  when:
-    - devtools_enable_rustup_bootstrap | bool
-    - _rustup_present.rc == 0
-
-- name: Devtools | Install rust components (fmt/clippy)
-  become: true
-  become_user: "{{ ansible_facts.user_id }}"
-  ansible.builtin.command: "rustup component add {{ item }}"
-  loop: "{{ devtools_rustup_components | default([]) }}"
-  when:
-    - devtools_enable_rustup_bootstrap | bool
-    - _rustup_present.rc == 0
-    - (devtools_rustup_components | default([])) | length > 0

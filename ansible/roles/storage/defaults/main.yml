@@ -67,3 +67,9 @@ storage_pacman_packages_restic:
 # Snapper config name and target
 storage_snapper_config_name: "root"
 storage_snapper_config_path: "/"
+
+# Btrfs maintenance timers (scrub/balance/trim) - safe defaults
+storage_enable_btrfsmaintenance: true
+
+storage_pacman_packages_btrfsmaintenance:
+  - btrfsmaintenance

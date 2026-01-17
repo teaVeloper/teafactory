@@ -2,7 +2,7 @@
 - name: Baseline | Install core CLI packages
   ansible.builtin.include_role:
     name: packages
-    tasks_from: install
+    tasks_from: install.yml
   vars:
     packages_pacman_packages: "{{ baseline_pacman_packages | default([]) }}"
     packages_aur_packages: "{{ baseline_aur_packages | default([]) }}"

@@ -1,11 +1,10 @@
 ---
-- name: Apps | Apply mode defaults
+- name: Apps | Apply mode defaults (opinionated)
   ansible.builtin.set_fact:
     apps_enable_heavy_media: "{{ true if apps_mode in ['full'] else apps_enable_heavy_media }}"
-    apps_enable_creative: "{{ true if apps_mode in ['full'] else apps_enable_creative }}"
-    apps_enable_private_messaging: "{{ true if apps_mode in ['private', 'full'] else apps_enable_private_messaging }}"
-    apps_enable_uni_apps: "{{ true if apps_mode in ['uni', 'full'] else apps_enable_uni_apps }}"
-  when: apps_mode != 'core'
+    apps_enable_creative: "{{ true if apps_mode in ['full', 'uni'] else apps_enable_creative }}"
+    apps_enable_private_messaging: "{{ true if apps_mode in ['full', 'private'] else apps_enable_private_messaging }}"
+    apps_enable_uni_apps: "{{ true if apps_mode in ['full', 'uni'] else apps_enable_uni_apps }}"
 
 - name: Apps | Compute package selection
   ansible.builtin.set_fact:

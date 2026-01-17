@@ -22,12 +22,12 @@
   become_user: "{{ ansible_facts.user_id }}"
   ansible.builtin.command: "uv tool install {{ item }}"
   loop: "{{ (uv_tools_required | default([])) + (uv_tools_extras | default([])) }}"
-  register: uv_tool_install
+  register: uv_tools_install
   changed_when: >
-    ('Installed' in (uv_tool_install.stdout | default('')))
-    or ('installed' in (uv_tool_install.stdout | default('')))
-    or ('Updated' in (uv_tool_install.stdout | default('')))
-    or ('updated' in (uv_tool_install.stdout | default('')))
+    ('Installed' in (uv_tools_install.stdout | default('')))
+    or ('installed' in (uv_tools_install.stdout | default('')))
+    or ('Updated' in (uv_tools_install.stdout | default('')))
+    or ('updated' in (uv_tools_install.stdout | default('')))
   when:
     - uv_tools_enable | bool
     - ((uv_tools_required | default([])) + (uv_tools_extras | default([]))) | length > 0

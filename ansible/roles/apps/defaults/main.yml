@@ -1,18 +1,21 @@
 ---
-apps_mode: core  # core | full
+# apps_mode: core | uni | private | full
+apps_mode: core
 
+# Global default (set in group_vars/all.yml)
 apps_mail_variant: thunderbird  # thunderbird | betterbird | none
 
-apps_enable_heavy_media: false      # obs-studio
-apps_enable_creative: false         # inkscape, gimp
-apps_enable_private_messaging: false # signal
-apps_enable_uni_apps: false         # graphviz/gephi or keep those in devtools/uni if you prefer
+apps_enable_heavy_media: false
+apps_enable_creative: false
+apps_enable_private_messaging: false
+apps_enable_uni_apps: false
 
 apps_pacman_core:
   - firefox
-  - chromium
   - libreoffice-fresh
   - vlc
+  # chromium optional; if you really want everywhere add here
+  - chromium
 
 apps_pacman_media_heavy:
   - obs-studio

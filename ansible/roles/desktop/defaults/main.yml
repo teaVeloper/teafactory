@@ -31,10 +31,6 @@ desktop_shared_pacman_packages:
   - pipewire-pulse
   - pavucontrol   # optional but practical
 
-  # bluetooth plumbing
-  - bluez
-  - bluez-utils
-
   # wayland x interaction
   - xorg-xwayland # for wayland
 

@@ -22,3 +22,23 @@
 - name: Storage | Configure snapper
   ansible.builtin.include_tasks: snapper.yml
   when: storage_enable_snapper | bool
+
+- name: Storage | Install btrfsmaintenance (optional)
+  ansible.builtin.include_role:
+    name: packages
+    tasks_from: install.yml
+  vars:
+    packages_pacman_packages: "{{ storage_pacman_packages_btrfsmaintenance }}"
+  when: storage_enable_btrfsmaintenance | bool
+
+- name: Storage | Enable btrfsmaintenance timers (optional)
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - btrfs-scrub.timer
+    - btrfs-balance.timer
+    - btrfs-trim.timer
+  when: storage_enable_btrfsmaintenance | bool

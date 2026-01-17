@@ -4,7 +4,7 @@
     secrets_mgmt__pacman_packages: >-
       {{
         secrets_mgmt_pacman_packages_base
-        + (secrets_mgmt_pacman_packages_yubikey if (secret_mgmt_enable_yubikey | bool) else [])
+        + (secrets_mgmt_pacman_packages_yubikey if (secrets_mgmt_enable_yubikey | bool) else [])
       }}
 
 - name: Secret Management | Build AUR package list
@@ -12,7 +12,7 @@
     secrets_mgmt__aur_packages: >-
       {{
         secrets_mgmt_aur_packages_base
-        + (secrets_mgmt_aur_packages_keyring if (secret_mgmt_enable_keyring_pass_backend | bool) else [])
+        + (secrets_mgmt_aur_packages_keyring if (secrets_mgmt_enable_keyring_pass_backend | bool) else [])
       }}
 
 - name: Secret Management | Install packages via shared packages role

@@ -2,7 +2,7 @@
 - name: Desktop | Install display manager
   ansible.builtin.include_role:
     name: packages
-    tasks_from: install
+    tasks_from: install.yml
   vars:
     packages_pacman_packages:
       - "{{ desktop_dm | default('sddm') }}"
