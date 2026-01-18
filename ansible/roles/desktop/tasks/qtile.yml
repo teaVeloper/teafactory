@@ -2,7 +2,7 @@
 - name: Desktop | Install Qtile packages
   ansible.builtin.include_role:
     name: packages
-    tasks_from: install
+    tasks_from: install.yml
   vars:
     packages_pacman_packages: "{{ desktop_qtile_pacman_packages | default([]) }}"
     packages_aur_packages: "{{ desktop_qtile_aur_packages | default([]) }}"

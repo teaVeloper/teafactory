@@ -2,8 +2,13 @@
 desktop_enable_qtile: true
 desktop_enable_kde: false
 
+# Display manager behavior during provisioning
 desktop_enable_dm: true
 desktop_dm: sddm
+
+# Important: avoid taking over VT during ansible runs
+desktop_dm_start_now: false   # start service immediately (dangerous during provisioning)
+desktop_dm_set_default_target: false  # set system default to graphical.target
 
 desktop_enable_gpu_drivers: true
 desktop_force_gpu: "auto"     # auto|amd|intel|nvidia|vm

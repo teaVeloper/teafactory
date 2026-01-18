@@ -1,0 +1,13 @@
+---
+- name: Activate | Set default target to graphical (if desktop enabled)
+  become: true
+  ansible.builtin.command: systemctl set-default graphical.target
+  changed_when: false
+  when: desktop_enable_dm | default(false) | bool
+
+- name: Activate | Start display manager (last step)
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ (desktop_dm | default('sddm')) }}.service"
+    state: started
+  when: desktop_enable_dm | default(false) | bool

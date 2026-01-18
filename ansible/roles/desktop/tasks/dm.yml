@@ -1,4 +1,3 @@
----
 - name: Desktop | Install display manager
   ansible.builtin.include_role:
     name: packages
@@ -7,9 +6,16 @@
     packages_pacman_packages:
       - "{{ desktop_dm | default('sddm') }}"
 
-- name: Desktop | Enable display manager service
+- name: Desktop | Enable display manager (do not start)
   become: true
   ansible.builtin.systemd:
     name: "{{ (desktop_dm | default('sddm')) }}.service"
     enabled: true
-    state: started
+    state: stopped
+
+- name: Desktop | Default to graphical target (so DM starts on boot)
+  become: true
+  ansible.builtin.command: systemctl set-default graphical.target
+  changed_when: false
+  when: desktop_enable_dm | bool
+
