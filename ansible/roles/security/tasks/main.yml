@@ -8,7 +8,7 @@
 - name: Security | Add user to wheel group
   become: true
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ teafactory_user }}"
     groups: wheel
     append: true
   when: security_add_user_to_wheel | bool
@@ -23,7 +23,7 @@
 - name: Security | Add user to docker group (optional)
   become: true
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ teafactory_user }}"
     groups: docker
     append: true
   when:
@@ -33,7 +33,7 @@
 - name: Security | Add user to extra groups
   become: true
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: "{{ teafactory_user }}"
     groups: "{{ security_extra_groups }}"
     append: true
   when: (security_extra_groups | default([])) | length > 0

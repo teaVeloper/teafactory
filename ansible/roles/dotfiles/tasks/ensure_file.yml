@@ -15,7 +15,7 @@
 
 - name: Dotfiles | Ensure file | Ensure parent exists
   become: true
-  become_user: "{{ ansible_user_id }}"
+  become_user: "{{ teafactory_user }}"
   ansible.builtin.file:
     path: "{{ ensure_path | dirname }}"
     state: directory
@@ -23,7 +23,7 @@
 
 - name: Dotfiles | Ensure file | Touch
   become: true
-  become_user: "{{ ansible_user_id }}"
+  become_user: "{{ teafactory_user }}"
   ansible.builtin.file:
     path: "{{ ensure_path }}"
     state: touch

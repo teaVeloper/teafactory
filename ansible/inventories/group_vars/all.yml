@@ -28,3 +28,4 @@ apps_mail_variant: thunderbird
 
 hardware_enable_logitech: true
 
+teafactory_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id, true) | default(ansible_user, true) }}"

@@ -15,7 +15,7 @@
 
 - name: Dotfiles | Ensure dir | Create
   become: true
-  become_user: "{{ ansible_user_id }}"
+  become_user: "{{ teafactory_user }}"
   ansible.builtin.file:
     path: "{{ ensure_path }}"
     state: directory
