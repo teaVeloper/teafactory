@@ -1,39 +1,42 @@
 ---
-# --- auto detection ---
+- name: Hardware | Normalize knobs (always define facts)
+  ansible.builtin.set_fact:
+    hardware_is_laptop: false
+    hardware_has_bluetooth: false
+
+- name: Hardware | Normalize enable flags to tri-state strings
+  ansible.builtin.set_fact:
+    _hw_laptop_mode: "{{ (hardware_enable_laptop | string) | lower }}"
+    _hw_bt_mode: "{{ (hardware_enable_bluetooth | string) | lower }}"
+
 - name: Hardware | Detect laptop (BAT* present)
   ansible.builtin.shell: "ls /sys/class/power_supply/BAT* >/dev/null 2>&1"
   register: hardware_bat_check
   changed_when: false
   failed_when: false
 
-- name: Hardware | Set laptop fact (auto)
+- name: Hardware | Set laptop fact
   ansible.builtin.set_fact:
-    hardware_is_laptop: "{{ hardware_enable_laptop == 'true' or (hardware_enable_laptop == 'auto' and hardware_bat_check.rc == 0) }}"
-  when: hardware_enable_laptop in ['auto', 'true', 'false']
-
-- name: Hardware | Set laptop fact (forced)
-  ansible.builtin.set_fact:
-    hardware_is_laptop: "{{ hardware_enable_laptop | bool }}"
-  when: hardware_enable_laptop in ['true', 'false']
+    hardware_is_laptop: >-
+      {{
+        true if _hw_laptop_mode == 'true'
+        else (hardware_bat_check.rc == 0) if _hw_laptop_mode == 'auto'
+        else false
+      }}
 
 - name: Hardware | Detect bluetooth (sysfs)
   ansible.builtin.stat:
     path: /sys/class/bluetooth
   register: hardware_bluetooth_sys
 
-- name: Hardware | Set bluetooth fact (auto)
+- name: Hardware | Set bluetooth fact
   ansible.builtin.set_fact:
     hardware_has_bluetooth: >-
       {{
-        (hardware_enable_bluetooth == 'true') or
-        (hardware_enable_bluetooth == 'auto' and (hardware_bluetooth_sys.stat.exists | default(false)))
+        true if _hw_bt_mode == 'true'
+        else (hardware_bluetooth_sys.stat.exists | default(false)) if _hw_bt_mode == 'auto'
+        else false
       }}
-  when: hardware_enable_bluetooth in ['auto', 'true', 'false']
-
-- name: Hardware | Set bluetooth fact (forced)
-  ansible.builtin.set_fact:
-    hardware_has_bluetooth: "{{ hardware_enable_bluetooth | bool }}"
-  when: hardware_enable_bluetooth in ['true', 'false']
 
 # --- feature includes ---
 - name: Hardware | fwupd

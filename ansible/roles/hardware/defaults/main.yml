@@ -2,8 +2,8 @@
 # hardware: device support (udev, drivers, daemons). Not general apps.
 
 # Auto detection: "auto" tries to detect; true/false forces.
-hardware_enable_laptop: auto        # true|false|auto
-hardware_enable_bluetooth: auto     # true|false|auto
+hardware_enable_laptop: "auto"        # true|false|auto
+hardware_enable_bluetooth: "auto"     # true|false|auto
 
 # Peripherals
 hardware_enable_zsa: true
